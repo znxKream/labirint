@@ -14,6 +14,7 @@ class Player(Gamesprite):
         Gamesprite.__init__(self,picture,w,h,x,y)
         self.x_speed = x_speed
         self.y_speed = y_speed
+        self.direction = 'right'
     def update (self):
         self.rect.x += self.x_speed
         platforms_touched = sprite.spritecollide (player, walls, False)
@@ -32,7 +33,14 @@ class Player(Gamesprite):
             for p in platforms_touched:
                 self.rect.top = max(self.rect.top, p.rect.bottom)
     def fire(self):
-        bullets.add(Bullet('bullet.png',10,10,self.rect.right,self.rect.centery,2))
+        if self.direction == 'right':
+            bullets.add(Bullet('bullet.png',10,10,self.rect.right,self.rect.centery,2))
+        else:
+            bullets.add(Bullet('bullet.png',10,10,self.rect.left,self.rect.centery,-2))
+
+    def change_image(self,picture):
+        self.image = transform.scale(image.load(picture),(self.rect.width,self.rect.height))
+
 
 class Enemy(Gamesprite):
     def __init__(self,picture,w,h,x,y,speed,direction,x1,x2,y1,y2):
@@ -86,7 +94,7 @@ pic = transform.scale(image.load('back.jpg'),(weight_win,height_win))
 
 window = display.set_mode((weight_win,height_win))
 clock = time.Clock()
-player = Player('hero.png',50,50,170,170,0,0)
+player = Player('herol.png',50,50,170,170,0,0)
 # enemy = Enemy('enemy.png',50,50,600,650,2,'left',600,700,0,0)
 # enemy2 = Enemy('enemy.png',50,50,300,350,2,'left',320,400,0,0)
 final = Gamesprite('teleport.png',70,70,1100,620)
@@ -136,7 +144,7 @@ while 1:
         final.reset()
     
 
-
+    sprite.groupcollide(bullets, walls, True, False)
     #platforms_touched = sprite.spritecollide (player, walls, False)
     for i in enemys:
         res = sprite.spritecollide(i,bullets,True)
@@ -159,9 +167,13 @@ while 1:
                 sound1.play()
                 player.fire()
             if i.key == K_d:
+                player.direction = 'right'
                 player.x_speed += player_speed
+                player.change_image('heror.png')
             elif i.key == K_a:
+                player.direction = 'left'
                 player.x_speed -= player_speed
+                player.change_image('herol.png')
             elif i.key == K_w:
                 player.y_speed -= player_speed
             elif i.key == K_s:
