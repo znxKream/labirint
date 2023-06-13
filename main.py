@@ -30,7 +30,10 @@ class Player(Gamesprite):
                 self.rect.bottom = min (self.rect.bottom, p.rect.top)
         elif self.y_speed < 0:
             for p in platforms_touched:
-                self.rect.top = max(self.rect.top, p.rect.bottom)    
+                self.rect.top = max(self.rect.top, p.rect.bottom)
+    def fire(self):
+        bullets.add(Bullet('bullet.png',10,10,self.rect.right,self.rect.centery,2))
+
 class Enemy(Gamesprite):
     def __init__(self,picture,w,h,x,y,speed,direction,x1,x2,y1,y2):
         Gamesprite.__init__(self,picture,w,h,x,y)
@@ -50,7 +53,15 @@ class Enemy(Gamesprite):
         else:
             self.rect.x += self.speed
             if self.end_x <= self.rect.x:
-                self.direction = 'left'    
+                self.direction = 'left'
+class Bullet(Gamesprite):
+    def __init__(self,picture,w,h,x,y,speed):
+        Gamesprite.__init__(self,picture,w,h,x,y)
+        self.speed = speed
+    def update(self):
+        self.reset()
+        self.rect.x += self.speed 
+
        
 
 
@@ -80,7 +91,7 @@ player = Player('hero.png',50,50,170,170,0,0)
 # enemy2 = Enemy('enemy.png',50,50,300,350,2,'left',320,400,0,0)
 final = Gamesprite('teleport.png',70,70,1100,620)
 win = Gamesprite('win.png',1200,700,0,0)
-
+bullets = sprite.Group()
 walls = sprite.Group()
 walls.add(Gamesprite('walls.png',10,100,300,300))
 walls.add(Gamesprite('walls.png',10,110,555,555))
@@ -119,12 +130,19 @@ while 1:
         window.blit(pic,(0,0))
         player.update()
         player.reset()
+    
+        bullets.update()
         
         final.reset()
+    
 
 
     #platforms_touched = sprite.spritecollide (player, walls, False)
     for i in enemys:
+        res = sprite.spritecollide(i,bullets,True)
+        if len(res) != 0:
+            enemys.remove(i)
+            continue
         i.reset()
         i.update()
         if i.rect.colliderect(player.rect):
@@ -139,6 +157,7 @@ while 1:
         if i.type == KEYDOWN:
             if i.key == K_SPACE:
                 sound1.play()
+                player.fire()
             if i.key == K_d:
                 player.x_speed += player_speed
             elif i.key == K_a:
